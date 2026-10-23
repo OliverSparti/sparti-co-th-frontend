@@ -1,0 +1,1 @@
+import{r as t}from"./vendor-react-DnG6notM.js";import"./WheelEmbedOnly-BdFfQiU6.js";import"./shopifyAdminRateLimit-CoXadj6b.js";const n=t.createContext(null);function c(){const o=t.useContext(n);if(!o)throw new Error("useShopifyConnection must be used within ShopifyConnectionProvider");return o}export{c as u};

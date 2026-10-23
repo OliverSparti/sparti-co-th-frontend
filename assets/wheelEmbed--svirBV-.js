@@ -1,0 +1,1 @@
+import{i as e,a}from"./initReactI18next-DLV_f4ar.js";import"./i18nInstance-B8K6-7Zg.js";const t=e.createInstance();t.use(a).init({resources:{},lng:"fr",fallbackLng:!1,interpolation:{escapeValue:!1},initImmediate:!1});export{t as default};

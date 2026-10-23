@@ -1,0 +1,1 @@
+let s=Promise.resolve(),o=0;function T(t){const e=s.then(async()=>{const n=o+550-Date.now();return n>0&&await new Promise(i=>setTimeout(i,n)),o=Date.now(),t()});return s=e.then(()=>{},()=>{}),e}const _=429,r=4,a=900;async function I(t){return t>=r?!1:(await new Promise(e=>setTimeout(e,a*(t+1))),!0)}export{_ as S,I as r,T as s};

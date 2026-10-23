@@ -1,0 +1,27 @@
+{
+  "name": "Sparti — Every AI model, every app, from one chat",
+  "short_name": "Sparti",
+  "description": "One subscription for every AI model and 500+ apps — automate workflows, generate images and video, edit your CMS, and unify mail and calendar, all from one chat.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0f172a",
+  "theme_color": "#016A76",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/brand/sparti/mark.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/sparti/mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false
+}

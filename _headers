@@ -1,0 +1,56 @@
+# Static cache headers for every build (Vite copies public/ into dist/, and
+# Cloudflare Workers Static Assets honours _headers — same format as Pages).
+#
+# Without this the whole site is served `max-age=0, must-revalidate`, so the
+# browser revalidates every asset on every visit. Hashed build output never
+# changes, so it is immutable for a year.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.mjs
+  Cache-Control: public, max-age=31536000, immutable
+
+# Media: cache in the browser, revalidate after a week.
+/*.png
+  Cache-Control: public, max-age=604800
+
+/*.jpg
+  Cache-Control: public, max-age=604800
+
+/*.jpeg
+  Cache-Control: public, max-age=604800
+
+/*.webp
+  Cache-Control: public, max-age=604800
+
+/*.avif
+  Cache-Control: public, max-age=604800
+
+/*.svg
+  Cache-Control: public, max-age=604800
+
+/*.ico
+  Cache-Control: public, max-age=604800
+
+/*.pdf
+  Cache-Control: public, max-age=3600
+
+# The SPA shell is always revalidated in the browser so a new deploy is picked
+# up, with a short shared TTL at the edge (SPA HTML caching invariant).
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300
+
+/
+  Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300

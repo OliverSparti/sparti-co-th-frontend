@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+
+<head>
+  <script>window.addEventListener('vite:preloadError',function(e){e.preventDefault()});</script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- PRESENT-BUT-EMPTY ON PURPOSE. injectMeta (tenant-routing.js) fills these by
+       plain string .replace(), which is a SILENT NO-OP when the tag is absent —
+       unlike its setMeta() helper, which inserts. So a shell without these three
+       never gets them, on any plane. Values come from the brand at request time:
+         · twitter:card      → summary_large_image when the brand has an OG image,
+                               downgraded to summary when it does not
+         · apple-mobile-web-app-title → brand site_name (iOS bookmark label)
+         · apple-touch-icon  → brand favicon_url (see the /brand-assets fetch below)
+       Root index.html carries Sparti-branded DEFAULTS here and relies on its
+       cleanup script; a tenant shell must not, or Sparti branding leaks onto a
+       customer domain in a SERP/tab flash. Empty is the correct tenant default.
+       Kept in sync with index.html — drift here is a live SEO regression. -->
+  <meta name="apple-mobile-web-app-title" content="" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#016A76">
+  <script>
+    (function () {
+      // This shell is what a workspace box serves (FRNCH Paris). Root
+      // index.html cream never reaches that plane — without this, Shopify
+      // iframes flash Sparti teal / lavender until the JS chunk mounts.
+      var path = location.pathname;
+      var host = (window.__FORCED_TENANT_HOST__ || location.hostname).toLowerCase();
+      var embed = /(?:^|[?&])embed=1(?:&|$)/.test(location.search);
+      var frnchHost = host === 'frnch.sparti.ai' || host === 'www.frnch.sparti.ai'
+        || host === 'frnch.fr' || host === 'www.frnch.fr';
+      var wheelPath = /roue-de-la-chance/.test(path);
+      if (embed) document.documentElement.classList.add('sparti-embed');
+      if (frnchHost || wheelPath) {
+        document.documentElement.classList.add('frnch-embed');
+        var theme = document.querySelector('meta[name="theme-color"]');
+        if (theme) theme.setAttribute('content', '#fefaf6');
+      }
+    })();
+  </script>
+  <style>
+    html.frnch-embed, html.frnch-embed body, html.frnch-embed #root { background: #fefaf6 !important; }
+  </style>
+  <style>
+    /* First-paint boot state (2026-10-17). Before React mounts #root is empty, so
+       a cold visit painted a blank rectangle and then jumped to the page once the
+       JS chunk landed. Paint the brand's own background plus a small ring (and
+       the brand logo when it has one) immediately, so the first frame already
+       belongs to the brand. The brand values are set on <html> by the script at
+       the top of <body>, which reads the __TENANT_DATA__ the server injects into
+       <head> — available for the first paint without waiting on JS to render.
+       The fallbacks keep this shell neutral when no brand resolved. React
+       replaces #root on mount, so this removes itself. The frnch-embed override
+       above still wins: it is a more specific selector with !important. */
+    html, body { background: var(--sparti-boot-bg, #ffffff); }
+    #root:empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1.5rem; min-height: 100vh;
+    }
+    html[data-sparti-boot-logo] #root:empty::before {
+      content: ""; width: 10rem; height: 2.5rem;
+      background-image: var(--sparti-boot-logo); background-repeat: no-repeat;
+      background-position: center; background-size: contain;
+    }
+    #root:empty::after {
+      content: ""; width: 2.5rem; height: 2.5rem; border-radius: 50%;
+      border: 3px solid hsl(240 20% 90%);
+      border-top-color: var(--sparti-boot-ring, #cbd5e1);
+      animation: sparti-boot-spin .8s linear infinite;
+    }
+    @keyframes sparti-boot-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #root:empty::after { animation: none; } }
+  </style>
+  <!-- Keep relative /api/sparti/* in proxy mode (same-origin on Vultr). -->
+  <meta name="sparti-openclaw-proxy" content="1" />
+  <meta name="google" content="notranslate">
+  <meta http-equiv="Content-Language" content="en">
+  <link rel="preconnect" href="https://cloud.sparti.ai" crossorigin />
+  <link rel="dns-prefetch" href="https://cloud.sparti.ai" />
+  <!-- Neutral shell icons — Edge /api/favicon + the /brand-assets fetch below
+       swap both to the brand's own favicon. Never ship the Sparti mark as a
+       default (SERP / tab flash = wrong brand), and the apple-touch-icon element
+       must EXIST because injectMeta rewrites its href by .replace() rather than
+       inserting the tag. -->
+  <link rel="icon" href="data:," />
+  <link rel="apple-touch-icon" href="data:," />
+  <title></title>
+
+  <script>
+    (function () {
+      var h = (window.__FORCED_TENANT_HOST__ || window.location.hostname).toLowerCase();
+      var qsTenant = new URLSearchParams(window.location.search).get('tenant');
+      if (qsTenant) { h = qsTenant.toLowerCase(); }
+      document.querySelectorAll('[data-sparti-og]').forEach(function (el) { el.remove(); });
+      window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); });
+      // Favicon only — NEVER document.title. injectMeta already wrote the CMS page
+      // title server-side (so a no-JS crawler gets the real one) and
+      // react-helmet owns it after hydration. Overwriting it with the hostname
+      // here was the "SERP brand-only title" bug root index.html fixed; a tenant
+      // shell that still does it shows `quatrequarts.fr` in the browser tab
+      // instead of the page's own title.
+      fetch('/brand-assets?host=' + encodeURIComponent(h))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d) return;
+          var icons = document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]');
+          if (d.favicon_url) {
+            icons.forEach(function (l) { l.href = d.favicon_url; });
+          } else {
+            // No brand favicon → drop the neutral placeholder rather than leave a
+            // blank `data:,` icon, which some browsers render as a broken glyph.
+            icons.forEach(function (l) { if (l.parentNode) l.parentNode.removeChild(l); });
+          }
+        })
+        .catch(function () { });
+    })();
+  </script>
+
+  <meta name="theme-font" content="Geist">
+  <script type="module" crossorigin src="/assets/index-CzeURHQ3.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-DnG6notM.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-supabase--JLBGSfW.js">
+  <link rel="stylesheet" crossorigin href="/assets/vendor-react-Bubatyla.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-BmRs4x7V.css">
+</head>
+
+<body>
+  <script>
+    // Brand first-paint vars (2026-10-17). Runs during parsing, before the first
+    // paint, and reads the payload the server already injected into <head> — so
+    // the boot background / ring / logo are the BRAND's, not Sparti's, with no
+    // extra request and no wait. Absent payload (a static fallthrough, or a
+    // resolver outage) leaves the neutral fallbacks in the stylesheet above.
+    (function () {
+      try {
+        var d = window.__TENANT_DATA__;
+        var ds = d && d.brand && d.brand.design_system;
+        if (typeof ds === 'string') ds = JSON.parse(ds);
+        var colors = (ds && ds.extended && ds.extended.colors) || {};
+        var bg = colors.background && colors.background.light;
+        var primary = colors.primary && colors.primary.light;
+        var el = document.documentElement;
+        if (bg) el.style.setProperty('--sparti-boot-bg', bg);
+        if (primary) el.style.setProperty('--sparti-boot-ring', primary);
+        var logo = d && d.brand && (d.brand.logo_url || d.brand.logo_light_url || d.brand.logo_dark_url);
+        if (logo && /^https?:\/\//.test(logo)) {
+          el.style.setProperty('--sparti-boot-logo', 'url("' + logo.replace(/["()\\\s]/g, '') + '")');
+          el.setAttribute('data-sparti-boot-logo', '');
+        }
+        // Mark the page as brand-booted so the neutral defaults are not needed.
+        if (bg || primary || logo) el.setAttribute('data-sparti-boot-brand', '');
+      } catch (e) { /* a malformed payload must never block the boot paint */ }
+    })();
+  </script>
+  <div id="root"></div>
+</body>
+
+</html>

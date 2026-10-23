@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Connection complete · Sparti</title>
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --fg: #0f172a;
+      --muted: #64748b;
+      --ok: #10b981;
+      --ok-bg: rgba(16, 185, 129, 0.10);
+      --ok-ring: rgba(16, 185, 129, 0.30);
+      --err: #dc2626;
+      --err-bg: rgba(220, 38, 38, 0.10);
+      --err-ring: rgba(220, 38, 38, 0.30);
+      --primary: #0f172a;
+      --primary-bg: rgba(15, 23, 42, 0.10);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0a0a0a; --card:#111111; --border:#262626; --fg:#fafafa; --muted:#a3a3a3; --primary:#fafafa; --primary-bg:rgba(255,255,255,0.10); }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; }
+    main { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 24px;
+      background-image: radial-gradient(60% 60% at 50% 0%, var(--primary-bg), transparent 70%); }
+    .card { width: 100%; max-width: 28rem; background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.12); padding: 32px;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px; }
+    .icon { width: 56px; height: 56px; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid transparent; }
+    .icon.ok { background: var(--ok-bg); color: var(--ok); border-color: var(--ok-ring); }
+    .icon.err { background: var(--err-bg); color: var(--err); border-color: var(--err-ring); }
+    .icon svg { width: 28px; height: 28px; }
+    h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+    p { margin: 0; font-size: 0.875rem; color: var(--muted); line-height: 1.55; }
+    p.small { font-size: 0.75rem; }
+    .stack > * + * { margin-top: 6px; }
+    button { appearance: none; cursor: pointer; border: 1px solid var(--border); background: transparent;
+      color: var(--fg); font: inherit; font-size: 0.875rem; padding: 10px 16px; border-radius: 10px;
+      transition: background 120ms ease; }
+    button:hover { background: var(--primary-bg); }
+    .secured { font-size: 0.7rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card" role="status" aria-live="polite">
+      <div id="icon" class="icon ok" aria-hidden="true">
+        <!-- check icon by default -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="stack">
+        <h1 id="title">Connection complete</h1>
+        <p id="subtitle">Your account is now linked. You can close this window — Sparti will pick up the new connection automatically.</p>
+      </div>
+      <p class="small" id="hint">You can close this window now.</p>
+      <p class="secured">Sparti · OAuth callback</p>
+    </div>
+  </main>
+
+  <script>
+    // ── Parse callback params ───────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const successToolkit = params.get('composio_success');
+    const errorMsg = params.get('composio_error');
+
+    const TOOLKIT_LABELS = {
+      GMAIL: 'Gmail', GOOGLEDRIVE: 'Google Drive', GOOGLECALENDAR: 'Google Calendar',
+      GOOGLESHEETS: 'Google Sheets', GOOGLESLIDES: 'Google Slides', GOOGLEDOCS: 'Google Docs',
+      GOOGLESEARCHCONSOLE: 'Google Search Console', GOOGLEANALYTICS: 'Google Analytics',
+      YOUTUBE: 'YouTube', LINKEDIN: 'LinkedIn', SHOPIFY: 'Shopify', SLACK: 'Slack',
+      NOTION: 'Notion', HUBSPOT: 'HubSpot', META_ADS: 'Meta Ads', TIKTOK: 'TikTok',
+      INSTAGRAM: 'Instagram', FACEBOOK: 'Facebook',
+    };
+    function prettyToolkit(slug) {
+      if (!slug) return null;
+      const up = slug.toUpperCase();
+      if (TOOLKIT_LABELS[up]) return TOOLKIT_LABELS[up];
+      return slug.toLowerCase().split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    // ── Render success vs error ─────────────────────────────────────────────
+    const iconEl = document.getElementById('icon');
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const hintEl = document.getElementById('hint');
+
+    if (errorMsg) {
+      iconEl.className = 'icon err';
+      iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      titleEl.textContent = 'Connection failed';
+      subtitleEl.textContent = errorMsg;
+    } else if (successToolkit) {
+      const label = prettyToolkit(successToolkit);
+      titleEl.textContent = label ? (label + ' connected') : 'Connection complete';
+      subtitleEl.textContent = 'Your account is now linked. You can close this window — Sparti will pick up the new connection automatically.';
+    } else {
+      iconEl.className = 'icon';
+      iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2.5 2.5"/></svg>';
+      titleEl.textContent = 'Awaiting connection result';
+      subtitleEl.textContent = 'No callback parameters were provided. You can close this window.';
+    }
+
+    // ── Broadcast to opener (popup mode) + storage event (same-origin tabs) ──
+    try {
+      const opener = window.opener && !window.opener.closed ? window.opener : null;
+      if (opener && successToolkit) {
+        opener.postMessage({ type: 'sparti:composio-oauth-complete', toolkit: successToolkit }, '*');
+      } else if (opener && errorMsg) {
+        const RECHECKABLE = ['no_user'];
+        const messageType = RECHECKABLE.includes(errorMsg)
+          ? 'sparti:composio-oauth-recheck'
+          : 'sparti:composio-oauth-error';
+        opener.postMessage({ type: messageType, message: errorMsg }, '*');
+      }
+    } catch (_) { /* opener may be cross-origin or closed */ }
+
+    // localStorage broadcast — any other open Sparti tab listens for `storage`
+    // events on this key and re-fetches connections without a page reload.
+    try {
+      if (successToolkit) {
+        localStorage.setItem('sparti:composio-oauth-broadcast',
+          JSON.stringify({ ts: Date.now(), type: 'success', toolkit: successToolkit }));
+      } else if (errorMsg) {
+        localStorage.setItem('sparti:composio-oauth-broadcast',
+          JSON.stringify({ ts: Date.now(), type: 'error', message: errorMsg }));
+      }
+    } catch (_) { /* private mode / disabled storage */ }
+
+    // Auto-close popups silently after a short beat, so successful flows just disappear.
+    try {
+      const isPopup = !!window.opener;
+      if (isPopup && (successToolkit || errorMsg)) {
+        setTimeout(function () { try { window.close(); } catch (_) { /* ignore */ } }, 600);
+      }
+    } catch (_) { /* ignore */ }
+  </script>
+</body>
+</html>

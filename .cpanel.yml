@@ -1,0 +1,24 @@
+---
+# cPanel Git Version Control deploy tasks.
+#
+# ONLY needed when the repository is cloned OUTSIDE the document root
+# (for example /home/zgtnzpsz/sparti-co-th-frontend) and then deployed with
+# "Deploy HEAD Commit". If the repository is cloned straight into the document
+# root (/home/zgtnzpsz/sparti.co.th), the files are already in place and this
+# file does nothing — which is the simpler setup we are using.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/zgtnzpsz/sparti.co.th/
+    - /bin/cp -Rf assets $DEPLOYPATH
+    - /bin/cp -Rf brand $DEPLOYPATH
+    - /bin/cp -Rf fonts $DEPLOYPATH
+    - /bin/cp -Rf lovable-uploads $DEPLOYPATH
+    - /bin/cp -Rf oauth $DEPLOYPATH
+    - /bin/cp -f index.html $DEPLOYPATH
+    - /bin/cp -f manifest.json $DEPLOYPATH
+    - /bin/cp -f manifest-desktop.json $DEPLOYPATH
+    - /bin/cp -f sw.js $DEPLOYPATH
+    - /bin/cp -f t.js $DEPLOYPATH
+    - /bin/cp -f gate.js $DEPLOYPATH
+    - /bin/cp -f placeholder.svg $DEPLOYPATH
+    - /bin/cp -f .htaccess $DEPLOYPATH

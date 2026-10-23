@@ -1,0 +1,1 @@
+const s="saved-on-server";function t(r){return(r??"").trim()===s}function o(r){let e=r.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/\/$/,"");const n=e.search(/[/?#]/);return n!==-1&&(e=e.slice(0,n)),e}export{s as S,t as i,o as n};

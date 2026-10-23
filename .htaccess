@@ -1,0 +1,37 @@
+# sparti.co.th — single-page app host (cPanel / LiteSpeed)
+#
+# The built frontend is a client-side-routed SPA. Without this, a refresh on
+# /packages or /contact asks the server for a file that does not exist and the
+# visitor gets a 404 instead of the page.
+#
+# Order matters: serve real files and directories untouched, and only fall back
+# to index.html for everything else.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Hashed build output never changes under the same name, so it can be cached hard.
+# index.html must never be cached, or a deploy goes unnoticed.
+<IfModule mod_headers.c>
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(js|css|woff2?|ttf|otf|png|jpe?g|svg|webp|avif|mjs)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# Compress text assets.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+AddType application/javascript .js .mjs
